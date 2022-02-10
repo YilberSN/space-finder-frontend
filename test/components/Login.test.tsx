@@ -1,6 +1,13 @@
 import ReactDOM from 'react-dom';
 import { Login } from '../../src/components/Login';
-import {fireEvent} from '@testing-library/react'
+import {fireEvent, waitFor} from '@testing-library/react'
+import { User } from '../../src/model/Model';
+import { history } from '../../src/utils/History';
+
+const someUSser : User={
+    userName: 'someUSer',
+    email: 'someEmail'
+}
 
 describe('Login component test suite', () => {
 
@@ -9,6 +16,9 @@ describe('Login component test suite', () => {
         login: jest.fn(),
     }
     const setUserMock= jest.fn();
+
+    const historyMock = history;
+    history.push = jest.fn();
 
     beforeAll(() => {
         console.log('Before all')
@@ -63,5 +73,44 @@ describe('Login component test suite', () => {
         expect(authServiceMock.login).toBeCalledWith('someUSer','somePass')
 
     })
+
+
+    test('Correctly handles login success', async ()=>{
+
+        authServiceMock.login.mockResolvedValueOnce(someUSser);
+
+        const inputs = document.querySelectorAll('input');
+        const loginInput = inputs[0];
+        const PasswordInput = inputs[1];
+        const loginButton = inputs[2];
+        
+        fireEvent.change(loginInput, {target:{value:'someUSer'}});
+        fireEvent.change(PasswordInput, {target:{value:'somePass'}});
+        fireEvent.click(loginButton);
+
+        const statusLabel = await waitFor(()=>container.querySelector('label'));
+        expect(statusLabel).toBeInTheDocument();
+        expect(statusLabel).toHaveTextContent('Login Successful');
+        expect(setUserMock).toBeCalledWith(someUSser)
+        expect(historyMock.push).toBeCalledWith('/profile')
+    });
+
+    test('Correctly handles login fail', async ()=>{
+
+        authServiceMock.login.mockResolvedValueOnce(undefined);
+
+        const inputs = document.querySelectorAll('input');
+        const loginInput = inputs[0];
+        const PasswordInput = inputs[1];
+        const loginButton = inputs[2];
+        
+        fireEvent.change(loginInput, {target:{value:'someUSer'}});
+        fireEvent.change(PasswordInput, {target:{value:'somePass'}});
+        fireEvent.click(loginButton);
+
+        const statusLabel = await waitFor(()=>container.querySelector('label'));
+        expect(statusLabel).toBeInTheDocument();
+        expect(statusLabel).toHaveTextContent('Login Fail');
+    });
 
 })
