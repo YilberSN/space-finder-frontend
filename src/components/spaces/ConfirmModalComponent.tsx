@@ -17,7 +17,7 @@ export class ConfirModalComponent extends Component<ConfirModalComponentProps>{
                 <div className="modal-content">
                     <h2>You tried to reserve and ...</h2>
                     <h3 className="modalText">{this.props.content}</h3>
-                    <button onClick={()=>this.props.closeM()}>Ok, close</button>
+                    <button className='modalButton' onClick={()=>this.props.closeM()}>Ok, close</button>
                 </div>
             </div>
         }
